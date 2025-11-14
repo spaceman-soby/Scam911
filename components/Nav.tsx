@@ -4,7 +4,6 @@ import React from 'react'
 import Link from 'next/link'
 import { Shield, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AccessibilityToolbar } from '@/components/AccessibilityToolbar'
 
 export function Nav() {
   const scrollToSection = (id: string) => {
@@ -61,14 +60,11 @@ export function Nav() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <AccessibilityToolbar />
-            <Link href="/signup">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                Sign Up Free
-              </Button>
-            </Link>
-          </div>
+          <Link href="/signup">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+              Sign Up Free
+            </Button>
+          </Link>
         </div>
       </div>
     </nav>

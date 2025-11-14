@@ -28,34 +28,36 @@ export function AccessibilityToolbar() {
 
   if (!isMounted) {
     return (
-      <Button
-        variant="outline"
-        size="lg"
-        className="rounded-full"
-        aria-label="Open accessibility settings"
-        disabled
-      >
-        <Settings className="h-5 w-5" />
-      </Button>
+      <div className="fixed bottom-8 right-8 z-50">
+        <Button
+          size="lg"
+          className="h-16 w-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-2xl"
+          aria-label="Open accessibility settings"
+          disabled
+        >
+          <Settings className="h-7 w-7" />
+        </Button>
+      </div>
     )
   }
 
   return (
     <>
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        variant="outline"
-        size="lg"
-        className="rounded-full"
-        aria-label="Open accessibility settings"
-        aria-expanded={isOpen}
-      >
-        <Settings className="h-5 w-5" />
-      </Button>
+      <div className="fixed bottom-8 right-8 z-50">
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          size="lg"
+          className="h-16 w-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-110"
+          aria-label="Open accessibility settings"
+          aria-expanded={isOpen}
+        >
+          <Settings className="h-7 w-7" />
+        </Button>
+      </div>
 
       {isOpen && (
         <div
-          className="fixed top-20 right-4 z-50 w-80 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-2xl p-6"
+          className="fixed bottom-28 right-8 z-50 w-80 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-2xl p-6"
           role="dialog"
           aria-label="Accessibility settings"
         >
