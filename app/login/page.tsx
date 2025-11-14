@@ -36,7 +36,13 @@ export default function LoginPage() {
 
       router.push('/')
     } catch (err: any) {
-      setError(err.message || 'Failed to login. Please check your credentials.')
+      if (err.message?.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please try again.')
+      } else if (err.message?.includes('Email not confirmed')) {
+        setError('Please confirm your email before logging in.')
+      } else {
+        setError(err.message || 'Failed to login. Please check your credentials.')
+      }
     } finally {
       setLoading(false)
     }
