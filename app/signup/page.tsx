@@ -41,6 +41,7 @@ export default function SignupPage() {
         options: {
           data: {
             full_name: fullName,
+            trusted_contact: trustedContact,
           },
         },
       })
@@ -48,7 +49,7 @@ export default function SignupPage() {
       if (signupError) throw signupError
 
       if (data.user) {
-        const preferencesPromise = supabase.from('user_preferences').insert({
+        await supabase.from('user_preferences').insert({
           user_id: data.user.id,
           font_size: 18,
           high_contrast: false,
@@ -56,29 +57,11 @@ export default function SignupPage() {
           tts_enabled: true,
           tts_language: 'en-IN',
         })
-
-        const contactPromise = trustedContact
-          ? supabase.from('trusted_contacts').insert({
-              user_id: data.user.id,
-              contact_name: 'Trusted Contact',
-              contact_email: trustedContact,
-            })
-          : Promise.resolve()
-
-        await Promise.all([preferencesPromise, contactPromise])
       }
 
       router.push('/')
     } catch (err: any) {
-      if (err.message?.includes('User already registered')) {
-        setError('This email is already registered. Please login instead.')
-      } else if (err.message?.includes('Invalid email')) {
-        setError('Please enter a valid email address.')
-      } else if (err.message?.includes('Password should be')) {
-        setError('Password must be at least 6 characters long.')
-      } else {
-        setError(err.message || 'Failed to create account. Please try again.')
-      }
+      setError(err.message || 'Failed to create account. Please try again.')
     } finally {
       setLoading(false)
     }

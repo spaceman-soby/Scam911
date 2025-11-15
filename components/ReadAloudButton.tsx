@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
 import { useAccessibility } from '@/contexts/AccessibilityContext'
 import { Button } from '@/components/ui/button'
@@ -12,15 +12,8 @@ interface ReadAloudButtonProps {
 
 export function ReadAloudButton({ text, className = '' }: ReadAloudButtonProps) {
   const { speak, stopSpeaking, isSpeaking, ttsEnabled } = useAccessibility()
-  const [isClient, setIsClient] = useState(false)
-  const [hasSpeechSynthesis, setHasSpeechSynthesis] = useState(false)
 
-  useEffect(() => {
-    setIsClient(true)
-    setHasSpeechSynthesis('speechSynthesis' in window)
-  }, [])
-
-  if (!isClient || !ttsEnabled || !hasSpeechSynthesis) {
+  if (!ttsEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return null
   }
 

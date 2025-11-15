@@ -2,25 +2,16 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Shield, Phone, LogOut, User } from 'lucide-react'
+import { Shield, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/contexts/AuthContext'
+import { AccessibilityToolbar } from '@/components/AccessibilityToolbar'
 
 export function Nav() {
-  const { user, signOut } = useAuth()
-  const router = useRouter()
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
-  }
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/')
   }
 
   return (
@@ -71,38 +62,12 @@ export function Nav() {
           </div>
 
           <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">
-                    {user.email}
-                  </span>
-                </div>
-                <Button
-                  onClick={handleSignOut}
-                  variant="outline"
-                  size="lg"
-                  className="font-semibold"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="outline" size="lg" className="font-semibold">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                    Sign Up Free
-                  </Button>
-                </Link>
-              </>
-            )}
+            <AccessibilityToolbar />
+            <Link href="/signup">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+                Sign Up Free
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
