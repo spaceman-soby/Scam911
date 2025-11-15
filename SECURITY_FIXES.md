@@ -96,3 +96,85 @@ WHERE proname = 'update_updated_at_column';
 ---
 
 **Status**: All security and performance issues resolved. Database is production-ready.
+
+## Build-Time Security Fixes
+
+Applied on: 2025-11-15
+
+### Issue: Build Failures Due to Missing Environment Variables
+
+**Problem**: Netlify builds were failing because Next.js attempted to pre-render pages at build time, but Supabase environment variables weren't available during the build phase.
+
+**Error Message**:
+```
+Error: supabaseUrl is required.
+Error occurred prerendering page "/login"
+```
+
+### Solutions Applied
+
+#### 1. Safe Environment Variable Defaults
+Changed from strict non-null assertions to safe defaults in `lib/supabase.ts`:
+
+```typescript
+// Before (caused build failures)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+// After (graceful handling)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+```
+
+#### 2. Dynamic Rendering Configuration
+Added `export const dynamic = 'force-dynamic'` to pages requiring authentication:
+- `app/page.tsx` (home page with authenticated components)
+- `app/login/page.tsx` (login page)
+- `app/signup/page.tsx` (signup page)
+
+This instructs Next.js to skip pre-rendering and render pages at request time.
+
+#### 3. Runtime Environment Checks
+Updated `contexts/AuthContext.tsx` to skip initialization during server-side rendering:
+
+```typescript
+useEffect(() => {
+  if (typeof window === 'undefined') {
+    setLoading(false)
+    return
+  }
+  // Initialize auth only in browser
+}, [])
+```
+
+#### 4. Error Handling
+Added error catching to prevent unhandled promise rejections in auth operations.
+
+### Impact
+
+- ✅ Build succeeds without environment variables present
+- ✅ Pages render dynamically at request time
+- ✅ Fully compatible with Netlify deployment process
+- ✅ Graceful error handling if variables are missing at runtime
+- ✅ No security compromises - variables still required for functionality
+
+### Verification
+
+**Build Test Without Environment Variables**:
+```bash
+unset NEXT_PUBLIC_SUPABASE_URL
+unset NEXT_PUBLIC_SUPABASE_ANON_KEY
+npm run build
+# ✅ Build succeeds
+```
+
+**Files Modified**:
+1. `lib/supabase.ts` - Safe environment variable handling
+2. `contexts/AuthContext.tsx` - Runtime checks and error handling
+3. `app/page.tsx` - Dynamic rendering
+4. `app/login/page.tsx` - Dynamic rendering
+5. `app/signup/page.tsx` - Dynamic rendering
+
+---
+
+**Status**: All security, performance, and build issues resolved. Application is deployment-ready.

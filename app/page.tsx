@@ -7,6 +7,8 @@ import { FAQ } from '@/components/FAQ'
 import { Footer } from '@/components/Footer'
 import { AccessibilityToolbar } from '@/components/AccessibilityToolbar'
 
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   return (
     <main>
