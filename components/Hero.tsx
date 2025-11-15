@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Shield, Phone, Upload, Bell } from 'lucide-react'
+import { Shield, Phone, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ReadAloudButton } from '@/components/ReadAloudButton'
 import { UploadModal } from '@/components/UploadModal'
@@ -38,17 +38,6 @@ export function Hero() {
                 <Upload className="mr-2 h-6 w-6" />
                 Check a Message
               </Button>
-
-              <Link href="/signup">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-lg px-8 py-6 h-auto font-semibold w-full sm:w-auto"
-                >
-                  <Bell className="mr-2 h-6 w-6" />
-                  Get Alerts
-                </Button>
-              </Link>
 
               <Link href="/signup">
                 <Button
