@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ReadAloudButton } from '@/components/ReadAloudButton'
+import { supabase } from '@/lib/supabase'
 
 interface UploadModalProps {
   open: boolean
@@ -85,12 +86,24 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     }, 200)
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        throw new Error('Please login to analyze screenshots')
+      }
+
       const formData = new FormData()
       formData.append('image', selectedFile)
-      formData.append('altText', altText)
+      formData.append('imageTitle', selectedFile.name)
+      formData.append('description', altText)
 
-      const response = await fetch('/api/analyze-screenshot', {
+      const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/analyze-screenshot`
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: formData,
       })
 
@@ -98,14 +111,15 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
       setProgress(100)
 
       if (!response.ok) {
-        throw new Error('Analysis failed')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Analysis failed')
       }
 
       const data = await response.json()
       setResult(data)
-    } catch (err) {
+    } catch (err: any) {
       clearInterval(progressInterval)
-      setError('Failed to analyze screenshot. Please try again.')
+      setError(err.message || 'Failed to analyze screenshot. Please try again.')
     } finally {
       setUploading(false)
     }
