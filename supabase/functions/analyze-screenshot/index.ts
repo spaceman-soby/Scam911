@@ -70,19 +70,91 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const formData = await req.formData();
+    const imageFile = formData.get("image") as File;
+    const imageTitle = formData.get("imageTitle") as string || "Untitled";
+    const description = formData.get("description") as string || "";
+
+    if (!imageFile) {
+      return new Response(
+        JSON.stringify({ error: "No image file provided" }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    const imageBuffer = await imageFile.arrayBuffer();
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("scam-images")
+      .upload(fileName, imageBuffer, {
+        contentType: imageFile.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      return new Response(
+        JSON.stringify({ error: "Failed to upload image" }),
+        {
+          status: 500,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("scam-images")
+      .getPublicUrl(fileName);
+
+    const imageUrl = urlData.publicUrl;
+
     const mockAnalysis = generateMockAnalysis();
 
-    await supabase.from("analysis_results").insert({
-      user_id: user.id,
-      image_url: null,
-      analysis_score: mockAnalysis.analysis_score,
-      labels: mockAnalysis.labels,
-      explanation: mockAnalysis.explanation,
-      recommended_action: mockAnalysis.recommended_action,
-      consented: true,
-    });
+    const { data: reportData, error: insertError } = await supabase
+      .from("scam_reports")
+      .insert({
+        user_id: user.id,
+        image_title: imageTitle,
+        description: description,
+        risk_score: mockAnalysis.analysis_score,
+        image_url: imageUrl,
+        labels: mockAnalysis.labels,
+        explanation: mockAnalysis.explanation,
+        recommended_action: mockAnalysis.recommended_action,
+      })
+      .select()
+      .single();
 
-    return new Response(JSON.stringify(mockAnalysis), {
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return new Response(
+        JSON.stringify({ error: "Failed to save report" }),
+        {
+          status: 500,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({
+      ...mockAnalysis,
+      report_id: reportData.id,
+      image_url: imageUrl,
+    }), {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/json",

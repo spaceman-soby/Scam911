@@ -92,21 +92,27 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         throw new Error('Please login to analyze screenshots')
       }
 
+      const formData = new FormData()
+      formData.append('image', selectedFile)
+      formData.append('imageTitle', selectedFile.name)
+      formData.append('description', altText)
+
       const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/analyze-screenshot`
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
         },
+        body: formData,
       })
 
       clearInterval(progressInterval)
       setProgress(100)
 
       if (!response.ok) {
-        throw new Error('Analysis failed')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Analysis failed')
       }
 
       const data = await response.json()
